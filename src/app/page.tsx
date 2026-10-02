@@ -1,21 +1,13 @@
-"use client";
-
-import { useState } from "react";
+import { connection } from "next/server";
 import ScheduleForm from "@/components/ScheduleForm";
 import ScheduleList from "@/components/ScheduleList";
-import { Schedule, ScheduleFormValues } from "@/types/schedule";
+import { getSchedules } from "@/db/schedules";
+import { addSchedule } from "./actions";
 
-export default function Home() {
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-
-  function handleAddSchedule(values: ScheduleFormValues) {
-    const newSchedule: Schedule = {
-      ...values,
-      id: crypto.randomUUID(),
-      createdAt: Date.now(),
-    };
-    setSchedules((prev) => [newSchedule, ...prev]);
-  }
+export default async function Home() {
+  // Read from the database on every request instead of prerendering at build time.
+  await connection();
+  const schedules = await getSchedules();
 
   return (
     <div className="flex flex-1 justify-center bg-zinc-50 dark:bg-black">
@@ -29,7 +21,7 @@ export default function Home() {
           </p>
         </header>
 
-        <ScheduleForm onSubmit={handleAddSchedule} />
+        <ScheduleForm onSubmit={addSchedule} />
 
         <section className="flex flex-col gap-4">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">

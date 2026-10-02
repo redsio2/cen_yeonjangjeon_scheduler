@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useTransition } from "react";
+import { validateSchedule } from "@/lib/validateSchedule";
 import { SCHEDULE_TYPES, ScheduleFormValues, ScheduleType } from "@/types/schedule";
 
 const EMPTY_FORM: ScheduleFormValues = {
@@ -14,12 +15,13 @@ const EMPTY_FORM: ScheduleFormValues = {
 };
 
 interface ScheduleFormProps {
-  onSubmit: (values: ScheduleFormValues) => void;
+  onSubmit: (values: ScheduleFormValues) => Promise<{ error: string | null }>;
 }
 
 export default function ScheduleForm({ onSubmit }: ScheduleFormProps) {
   const [values, setValues] = useState<ScheduleFormValues>(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   function handleChange<K extends keyof ScheduleFormValues>(
     key: K,
@@ -31,31 +33,26 @@ export default function ScheduleForm({ onSubmit }: ScheduleFormProps) {
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (
-      !values.title.trim() ||
-      !values.date ||
-      !values.startTime ||
-      !values.endTime ||
-      !values.assignee.trim() ||
-      !values.location.trim()
-    ) {
-      setError("모든 항목을 입력해주세요.");
-      return;
-    }
-
-    if (values.startTime >= values.endTime) {
-      setError("종료 시간은 시작 시간보다 늦어야 합니다.");
+    const validationError = validateSchedule(values);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
     setError(null);
-    onSubmit({
-      ...values,
-      title: values.title.trim(),
-      assignee: values.assignee.trim(),
-      location: values.location.trim(),
+    startTransition(async () => {
+      const result = await onSubmit({
+        ...values,
+        title: values.title.trim(),
+        assignee: values.assignee.trim(),
+        location: values.location.trim(),
+      });
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setValues(EMPTY_FORM);
     });
-    setValues(EMPTY_FORM);
   }
 
   return (
@@ -174,9 +171,10 @@ export default function ScheduleForm({ onSubmit }: ScheduleFormProps) {
 
       <button
         type="submit"
-        className="mt-2 self-start rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        disabled={isPending}
+        className="mt-2 self-start rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
       >
-        일정 등록
+        {isPending ? "등록 중..." : "일정 등록"}
       </button>
     </form>
   );
