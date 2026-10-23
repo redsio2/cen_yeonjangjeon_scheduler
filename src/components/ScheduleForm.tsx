@@ -2,7 +2,7 @@
 
 import { FormEvent, useState, useTransition } from "react";
 import { validateSchedule } from "@/lib/validateSchedule";
-import { SCHEDULE_TYPES, ScheduleFormValues, ScheduleType } from "@/types/schedule";
+import { ActionResult, SCHEDULE_TYPES, ScheduleFormValues, ScheduleType } from "@/types/schedule";
 
 const EMPTY_FORM: ScheduleFormValues = {
   title: "",
@@ -15,7 +15,7 @@ const EMPTY_FORM: ScheduleFormValues = {
 };
 
 interface ScheduleFormProps {
-  onSubmit: (values: ScheduleFormValues) => Promise<{ error: string | null }>;
+  onSubmit: (values: ScheduleFormValues) => Promise<ActionResult>;
 }
 
 export default function ScheduleForm({ onSubmit }: ScheduleFormProps) {
@@ -167,7 +167,7 @@ export default function ScheduleForm({ onSubmit }: ScheduleFormProps) {
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
 
       <button
         type="submit"

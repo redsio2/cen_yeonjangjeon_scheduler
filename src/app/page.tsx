@@ -2,7 +2,7 @@ import { connection } from "next/server";
 import ScheduleForm from "@/components/ScheduleForm";
 import ScheduleList from "@/components/ScheduleList";
 import { getSchedules } from "@/db/schedules";
-import { addSchedule } from "./actions";
+import { addMemo, addSchedule, deleteMemo } from "./actions";
 
 export default async function Home() {
   // Read from the database on every request instead of prerendering at build time.
@@ -27,7 +27,7 @@ export default async function Home() {
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
             등록된 일정 ({schedules.length})
           </h2>
-          <ScheduleList schedules={schedules} />
+          <ScheduleList schedules={schedules} onAddMemo={addMemo} onDeleteMemo={deleteMemo} />
         </section>
       </main>
     </div>

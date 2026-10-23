@@ -1,4 +1,5 @@
-import { Schedule, ScheduleType } from "@/types/schedule";
+import ScheduleMemos from "@/components/ScheduleMemos";
+import { ActionResult, Schedule, ScheduleType } from "@/types/schedule";
 
 const TYPE_BADGE_STYLE: Record<ScheduleType, string> = {
   촬영: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
@@ -17,9 +18,11 @@ function formatDate(date: string) {
 
 interface ScheduleListProps {
   schedules: Schedule[];
+  onAddMemo: (scheduleId: string, content: string) => Promise<ActionResult>;
+  onDeleteMemo: (memoId: string) => Promise<ActionResult>;
 }
 
-export default function ScheduleList({ schedules }: ScheduleListProps) {
+export default function ScheduleList({ schedules, onAddMemo, onDeleteMemo }: ScheduleListProps) {
   if (schedules.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-white/50 py-16 text-center dark:border-zinc-700 dark:bg-zinc-900/50">
@@ -57,6 +60,13 @@ export default function ScheduleList({ schedules }: ScheduleListProps) {
             <span>담당자: {schedule.assignee}</span>
             <span>장소: {schedule.location}</span>
           </div>
+
+          <ScheduleMemos
+            scheduleId={schedule.id}
+            memos={schedule.memos}
+            onAdd={onAddMemo}
+            onDelete={onDeleteMemo}
+          />
         </li>
       ))}
     </ul>
