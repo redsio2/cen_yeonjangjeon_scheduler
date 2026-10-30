@@ -1,8 +1,11 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { after } from "next/server";
 import { countMemos, deleteMemoById, insertMemo } from "@/db/memos";
 import { insertSchedule } from "@/db/schedules";
+import { emailScheduleCreated } from "@/lib/notifyEmail";
+import { notifyScheduleCreated } from "@/lib/notifySlack";
 import { validateMemo } from "@/lib/validateMemo";
 import { validateSchedule } from "@/lib/validateSchedule";
 import { ActionResult, MEMO_LIMIT_PER_SCHEDULE, ScheduleFormValues } from "@/types/schedule";
@@ -33,6 +36,10 @@ export async function addSchedule(
     return { error: "일정 저장에 실패했습니다. 잠시 후 다시 시도해주세요." };
   }
 
+  // Send the notices after the response so they never slow down or fail the form.
+  after(() =>
+    Promise.all([notifyScheduleCreated(normalized), emailScheduleCreated(normalized)])
+  );
   refresh();
   return { error: null };
 }
