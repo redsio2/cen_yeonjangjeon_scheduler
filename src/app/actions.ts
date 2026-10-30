@@ -6,6 +6,7 @@ import { countMemos, deleteMemoById, insertMemo } from "@/db/memos";
 import { insertSchedule } from "@/db/schedules";
 import { emailScheduleCreated } from "@/lib/notifyEmail";
 import { notifyScheduleCreated } from "@/lib/notifySlack";
+import { worksScheduleCreated } from "@/lib/notifyWorks";
 import { validateMemo } from "@/lib/validateMemo";
 import { validateSchedule } from "@/lib/validateSchedule";
 import { ActionResult, MEMO_LIMIT_PER_SCHEDULE, ScheduleFormValues } from "@/types/schedule";
@@ -38,7 +39,11 @@ export async function addSchedule(
 
   // Send the notices after the response so they never slow down or fail the form.
   after(() =>
-    Promise.all([notifyScheduleCreated(normalized), emailScheduleCreated(normalized)])
+    Promise.all([
+      notifyScheduleCreated(normalized),
+      emailScheduleCreated(normalized),
+      worksScheduleCreated(normalized),
+    ])
   );
   refresh();
   return { error: null };
